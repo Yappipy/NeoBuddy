@@ -1,2 +1,2 @@
-# NeoFieldBoss
-Discord Bot to ping role based on field boss
+# neoBuddy
+Discord Bot to help plan things on bns neo
