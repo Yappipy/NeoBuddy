@@ -49,6 +49,25 @@ def get_next_boss():
             }
     return next_spawn
 
+def get_todays_bosses():
+    """Returns a list of bosses scheduled for today (UTC+1)."""
+    bosses = load_boss_timers()
+    now = datetime.utcnow() + timedelta(hours=1)  # UTC+1
+    today_weekday = now.weekday()
+    todays_bosses = []
+    for boss in bosses:
+        if boss["weekday"] == today_weekday:
+            spawn_time = now.replace(hour=boss["hour"], minute=boss["minute"], second=0, microsecond=0)
+            # If the boss time has already passed today, skip it
+            if spawn_time >= now:
+                todays_bosses.append({
+                    "location": boss["location"],
+                    "time": spawn_time
+                })
+    # Sort by time
+    todays_bosses.sort(key=lambda b: b["time"])
+    return todays_bosses
+
 async def next_boss_command(interaction: discord.Interaction):
     boss = get_next_boss()
     if boss:

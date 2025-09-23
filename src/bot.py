@@ -8,7 +8,7 @@ import traceback
 
 load_dotenv()
 
-from fieldboss import next_boss_command, boss_alert_loop
+from fieldboss import next_boss_command, boss_alert_loop, get_todays_bosses
 
 intents = discord.Intents.default()
 intents.message_content = True  # Enable message content intent
@@ -58,6 +58,17 @@ async def ping(interaction: discord.Interaction):
 async def field_boss(interaction: discord.Interaction):
     # import inside handler so any import-time errors show only on use
     await next_boss_command(interaction)
+
+@bot.tree.command(name="todays_bosses", description="Show today's field bosses and their spawn times.")
+async def todays_bosses(interaction: discord.Interaction):
+    bosses = get_todays_bosses()
+    if not bosses:
+        msg = "No field bosses scheduled for the rest of today."
+    else:
+        msg = "**Today's Field Bosses:**\n"
+        for boss in bosses:
+            msg += f"- **{boss['location']}** at {boss['time'].strftime('%H:%M')} (In-Game Time)\n"
+    await interaction.response.send_message(msg)
 
 if __name__ == '__main__':
     token = os.getenv('BOT_TOKEN')
