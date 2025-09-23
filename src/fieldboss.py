@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 import discord
 import asyncio
 import os
+from discord import app_commands
 
 BOSS_CSV_PATH = "./data/boss_timers.csv"  # Update path as needed
 
@@ -74,6 +75,21 @@ async def next_boss_command(interaction: discord.Interaction):
         msg = f"Next boss: **{boss['location']}** at {boss['time'].strftime('%A %H:%M (In-Game Time)')}"
     else:
         msg = "No boss timers found."
+    await interaction.response.send_message(msg)
+
+@discord.app_commands.command(name="field_boss", description="Show the next field boss spawn time.")
+async def field_boss_command(interaction: discord.Interaction):
+    await next_boss_command(interaction)
+
+@discord.app_commands.command(name="todays_bosses", description="Show today's field bosses and their spawn times.")
+async def todays_bosses_command(interaction: discord.Interaction):
+    bosses = get_todays_bosses()
+    if not bosses:
+        msg = "No field bosses scheduled for the rest of today."
+    else:
+        msg = "**Today's Field Bosses:**\n"
+        for boss in bosses:
+            msg += f"- **{boss['location']}** at {boss['time'].strftime('%H:%M')} (In-Game Time)\n"
     await interaction.response.send_message(msg)
 
 async def boss_alert_loop(bot):

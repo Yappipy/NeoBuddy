@@ -8,8 +8,8 @@ import traceback
 
 load_dotenv()
 
-from fieldboss import next_boss_command, boss_alert_loop, get_todays_bosses
-from party_manager import force_calculator
+from fieldboss import field_boss_command, todays_bosses_command, boss_alert_loop
+from party_manager import force_calculator_command
 
 intents = discord.Intents.default()
 intents.message_content = True  # Enable message content intent
@@ -54,42 +54,17 @@ async def ping(interaction: discord.Interaction):
     latency = bot.latency * 1000  # Convert to milliseconds
     await interaction.response.send_message(f"Pong! Latency: {round(latency)} ms")
 
-# NOTE: changed name to field_boss (underscore) to avoid hyphen problems
-@bot.tree.command(name="field_boss", description="Show the next field boss spawn time.")
-async def field_boss(interaction: discord.Interaction):
-    # import inside handler so any import-time errors show only on use
-    await next_boss_command(interaction)
 
-@bot.tree.command(name="todays_bosses", description="Show today's field bosses and their spawn times.")
-async def todays_bosses(interaction: discord.Interaction):
-    bosses = get_todays_bosses()
-    if not bosses:
-        msg = "No field bosses scheduled for the rest of today."
-    else:
-        msg = "**Today's Field Bosses:**\n"
-        for boss in bosses:
-            msg += f"- **{boss['location']}** at {boss['time'].strftime('%H:%M')} (In-Game Time)\n"
-    await interaction.response.send_message(msg)
 
-@bot.tree.command(name="force_calculator", description="Calculate max force for extra party members.")
-@app_commands.describe(current_force="Current average force of the party",
-                       party_size="Current size of the party (max 6)",
-                       max_average_value="Maximum allowed average force")
-async def force_calculator_command(interaction: discord.Interaction,
-                                   current_force: int,
-                                   party_size: int,
-                                   max_average_value: int):
-    if party_size < 1 or party_size > 6:
-        await interaction.response.send_message("Error: Party size must be between 1 and 6.")
-        return
-    max_force = force_calculator(current_force, party_size, max_average_value)
-    if max_force < 0:
-        msg = "No extra members can be added without exceeding the max average force. Max force to lose per member: {-max_force}"
-    else:
-        msg = f"Current party size: {party_size}. Current average force: {current_force}.\n"
-        msg = msg + f"Max force for each extra member to stay below {max_average_value} average: {max_force}"
-    await interaction.response.send_message(msg)
+""" 
+Register commands from other modules 
+"""
+# Field boss commands
+bot.tree.add_command(field_boss_command)
+bot.tree.add_command(todays_bosses_command)
 
+# Party manager command
+bot.tree.add_command(force_calculator_command)
 
 if __name__ == '__main__':
     token = os.getenv('BOT_TOKEN')
